@@ -26,7 +26,8 @@ void sender(){
 	LCD_CLS();
 	LCD_LOCATE(0, 0);
 	LCD_PRINTF("Temperature: %0.1f sent.\n",temp);
-	wait(2);
+	wait(1);
+	LCD_CLS();
 }
 
 void receiver(){
@@ -36,15 +37,18 @@ void receiver(){
     buffertwo[0] = 0x00;
     I2C_WRITE(LM75_ADDRESS, buffertwo, 1);
 
+
     memset(buffertwo, 0x00, sizeof (buffertwo));
     I2C_READ(LM75_ADDRESS, buffertwo, 2);
+
     SERIAL_RECV(buffertwo, 16);
     int8_t _int_parttwo = (int8_t)buffertwo[0];
     temp2 = _int_parttwo + 0.5f * ((buffertwo[1]&0x80)>>7);
     LCD_CLS();
     LCD_LOCATE(0, 0);
     LCD_PRINTF("Temperature: %0.1f received.\n",temp2);
-    wait(2);
+    wait(1);
+    LCD_CLS();
 
 }
 
@@ -58,14 +62,20 @@ int main() {
     LCD_LOCATE(0, 0);
     LCD_PRINTF("Thermometer started"); //clear and start screen
     wait(2);
+    LCD_CLS();
 
     while (true) {
-    	if (JOYSTICK_PUSHED && SERIAL_AVAILABLE() == 0) {
-    		sender();
-    	}
-    	else if (JOYSTICK_PUSHED && SERIAL_AVAILABLE() !=0) {
+    	if (JOYSTICK_PUSHED && SERIAL_AVAILABLE() > 0) {
     		receiver();
+    		wait(1);
     	}
+    	else if (JOYSTICK_PUSHED) {
+    		sender();
+    		wait(1);
+    	}
+    LCD_LOCATE(0, 0);
+    LCD_PRINTF("Push the button.");
+
     }
 
 }
